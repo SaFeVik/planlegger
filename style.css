@@ -1,0 +1,187 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue";
+}
+
+body {
+    margin-top: 32px;
+    padding-inline: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+}
+
+h2 {
+    padding: 16px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgb(207, 224, 243);
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 500px;
+}
+.arrow-left {
+    margin-right: 8px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+.arrow-left.rotate {
+    transform: rotate(90deg);
+}
+
+.add-long-term-task.hide, .long-term-tasks.hide, .forgot-tasks.hide {
+    display: none;
+}
+
+.planner-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.week {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.1);
+}
+.day {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+}
+
+
+.planner-container .week:first-of-type .day.today {
+    background-color: #ffcfa8;
+}
+
+.tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.task {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    background-color: white;
+    border: 1px solid rgb(223, 223, 223);
+    
+}
+.important-container {
+    cursor: pointer;
+    width: 20px;
+    background-color: rgb(255, 243, 216);
+    border-radius: 4px 0 0 4px;
+}
+.important-container.important {
+    background-color: rgb(255, 201, 113);
+}
+
+.task-text {
+    padding: 8px 16px;
+    flex: 1;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+.task-text:hover {
+    cursor: pointer;
+    background-color: rgb(252, 252, 252);
+}
+.task-text.checked {
+    background-color: rgb(229, 255, 236);
+}
+
+.delete-task {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 70px;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 8px;
+    background-color: rgba(255, 58, 48, 0.066);
+    color: rgba(255, 58, 48, 0.681);
+    border-radius: 0 4px 4px 0;
+    transition: background-color 0.15s ease;
+}
+
+.delete-task:hover {
+    background-color: rgba(255, 58, 48, 0.082);
+}
+
+.add-task {
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    background-color: white;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    transition: box-shadow 0.15s ease;
+    border-radius: 4px;
+    color: black;
+}
+.add-task:hover {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.big-separator {
+    width: 100%;
+    height: 1px;
+    background-color: rgb(226, 226, 226);
+}
+
+/* Other containers */
+
+.other-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.other-container > div {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-radius: 16px;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    padding: 16px;
+}
+
+/* -------------------------------- */
+
+
+
+@media only screen and (min-width: 900px) {
+    .container {
+        max-width: 1000px;
+    }
+    .planner-container {
+        flex-direction: row;
+    }
+    .arrow-left {
+        display: none;
+    }
+    .other-container {
+        flex-direction: row;
+    }
+    .add-long-term-task.hide, .long-term-tasks.hide, .forgot-tasks.hide {
+        display: flex;
+    }
+}

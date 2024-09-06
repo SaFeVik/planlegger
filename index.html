@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planlegger</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Planlegger</h1>
+
+    <div class="container">
+        <div class="other-container">
+            <div class="forgot-container">
+                <h3><img class="arrow-left" src="./images/arrow_left.svg" alt="arrow">Glemte oppgaver</h3>
+                <div class="tasks forgot-tasks hide">
+                </div>
+            </div>
+            <div class="long-term-container">
+                <h3><img class="arrow-left" src="./images/arrow_left.svg" alt="arrow">Langsiktige oppgaver</h3>
+                <div class="tasks long-term-tasks hide">
+                </div>
+                <button class="add-task add-long-term-task hide">Legg til</button>
+            </div>
+        </div>
+        <div class="planner-container"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
