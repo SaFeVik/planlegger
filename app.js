@@ -18,7 +18,7 @@ async function addTask(weekNr, day, task) {
         task: task,
         checked: false,
         important: false,
-        user: "felixhusbanan@gmail.com"
+        user: "maritaeline@outlook.com"
     };
     const docRef = await addDoc(collection(db, "tasks"), newTask);
     return docRef.id;
