@@ -18,11 +18,7 @@ async function createPlannerHTML() {
             Object.entries(weekData.weekdays).forEach(([day, tasks]) => {
                 const dayDiv = document.createElement('div');
                 dayDiv.classList.add('day');
-
-                const today = new Date().toLocaleDateString('no-NO', { weekday: 'long' }).toLowerCase();
-                if (day === today) {
-                    dayDiv.classList.add('today');
-                }
+                dayDiv.setAttribute('data-day', day);
 
                 const dayTitle = document.createElement('h3');
                 dayTitle.innerHTML = day.charAt(0).toUpperCase() + day.slice(1);
@@ -36,8 +32,6 @@ async function createPlannerHTML() {
                         const taskElement = createTaskElement(task, tasksDiv);
                         tasksDiv.appendChild(taskElement);
                     });
-                } else {
-                    console.warn(`Uventet datatype for ${day}:`, tasks);
                 }
 
                 dayDiv.appendChild(tasksDiv);
@@ -53,18 +47,98 @@ async function createPlannerHTML() {
             container.appendChild(weekDiv);
         });
 
-        data.longTerm.forEach(task => {
-            const taskElement = createTaskElement(task, document.querySelector('.long-term-tasks'));
-            document.querySelector('.long-term-tasks').appendChild(taskElement);
-        });
-        data.forgottenTasks.forEach(task => {
-            const taskElement = createTaskElement(task, document.querySelector('.forgot-tasks'));
-            document.querySelector('.forgot-tasks').appendChild(taskElement);
-        });
+        // Implementer drag-and-drop funksjonalitet
+        implementDragAndDrop();
+
         updateDayBackgrounds();
     } catch (error) {
         console.error("Feil ved henting av data:", error);
         container.innerHTML = `<p>En feil oppstod: ${error.message}</p>`;
+    }
+}
+
+function createTaskElement(task, tasksDiv) {
+    const taskElement = document.createElement('div');
+    taskElement.classList.add('task');
+    taskElement.setAttribute('draggable', 'true');
+    taskElement.setAttribute('data-task-id', task.id);
+
+    taskElement.innerHTML = `
+        <div class="important-container"></div>
+        <p class="task-text ${task.checked ? 'checked' : ''}">
+            ${task.task}
+        </p>
+        <div class="delete-task">Slett</div>
+    `;
+
+    const deleteButton = taskElement.querySelector('.delete-task');
+    const taskTextEl = taskElement.querySelector('.task-text');
+    const importantEl = taskElement.querySelector('.important-container');
+    
+    if (task.important) {
+        importantEl.classList.add('important');
+    }
+    
+    importantEl.addEventListener('click', () => changeTaskState(task, taskElement, false));
+    taskTextEl.addEventListener('click', () => changeTaskState(task, taskElement, true));
+    deleteButton.addEventListener('click', () => deleteTask(task, taskElement, tasksDiv));
+
+    return taskElement;
+}
+
+function implementDragAndDrop() {
+    const tasks = document.querySelectorAll('.task');
+    const days = document.querySelectorAll('.day');
+
+    tasks.forEach(task => {
+        task.addEventListener('dragstart', dragStart);
+        task.addEventListener('dragend', dragEnd);
+    });
+
+    days.forEach(day => {
+        day.addEventListener('dragover', dragOver);
+        day.addEventListener('dragenter', dragEnter);
+        day.addEventListener('dragleave', dragLeave);
+        day.addEventListener('drop', drop);
+    });
+}
+
+function dragStart() {
+    this.classList.add('dragging');
+}
+
+function dragEnd() {
+    this.classList.remove('dragging');
+}
+
+function dragOver(e) {
+    e.preventDefault();
+}
+
+function dragEnter(e) {
+    e.preventDefault();
+    this.classList.add('drag-over');
+}
+
+function dragLeave() {
+    this.classList.remove('drag-over');
+}
+
+async function drop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    const task = document.querySelector('.dragging');
+    const tasksContainer = this.querySelector('.tasks');
+    tasksContainer.appendChild(task);
+    
+    const taskId = task.getAttribute('data-task-id');
+    const newDay = this.getAttribute('data-day');
+    
+    try {
+        await window.appFunctions.updateTaskDay(taskId, newDay);
+        updateDayBackgrounds();
+    } catch (error) {
+        console.error("Feil ved oppdatering av oppgavedag:", error);
     }
 }
 
@@ -107,35 +181,6 @@ document.querySelector('.long-term-container .arrow-left').addEventListener('cli
     document.querySelector('.long-term-tasks').classList.toggle('hide');
     document.querySelector('.add-long-term-task').classList.toggle('hide');
 });
-function createTaskElement(task, tasksDiv) {
-    const taskElement = document.createElement('div');
-    taskElement.classList.add('task');
-
-    taskElement.innerHTML = `
-        <div class="important-container"></div>
-        <p class="task-text">
-            ${task.task}
-        </p>
-        <div class="delete-task">Slett</div>
-    `;
-
-    
-    const deleteButton = taskElement.querySelector('.delete-task');
-    const taskTextEl = taskElement.querySelector('.task-text');
-    const importantEl = taskElement.querySelector('.important-container');
-    if (task.checked) {
-        taskTextEl.classList.add('checked');
-    }
-    if (task.important) {
-        importantEl.classList.add('important');
-    }
-    
-    importantEl.addEventListener('click', () => changeTaskState(task, taskElement, false));
-    taskTextEl.addEventListener('click', () => changeTaskState(task, taskElement, true));
-    deleteButton.addEventListener('click', () => deleteTask(task, taskElement, tasksDiv));
-
-    return taskElement;
-}
 
 async function addTask(weekNr, day, tasksDiv) {
     const newTask = prompt('Skriv inn ny oppgave:');

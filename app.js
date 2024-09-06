@@ -35,6 +35,12 @@ async function changeTaskState(taskId, checked, important) {
     });
 }
 
+async function updateTaskDay(taskId, newDay) {
+    await updateDoc(doc(db, "tasks", taskId), {
+        day: newDay
+    });
+}
+
 function processTasksData(allTasks) {
     const currentWeek = moment().isoWeek();
     const nextWeek = currentWeek + 1;
@@ -92,7 +98,8 @@ window.appFunctions = {
     getTasks,
     addTask,
     deleteTask,
-    changeTaskState
+    changeTaskState,
+    updateTaskDay
 };
 
 // Test funksjon
