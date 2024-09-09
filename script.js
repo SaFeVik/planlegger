@@ -1,12 +1,12 @@
-import { db } from './firebase.js';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import app from './app.js';
 
+// Resten av koden i script.js
 async function createPlannerHTML() {
     const container = document.querySelector('.planner-container');
     container.innerHTML = '';
     
     try {
-        const data = await window.appFunctions.getTasks();
+        const data = await app.getTasks();
         data.weeks.forEach(weekData => {
             const weekDiv = document.createElement('div');
             weekDiv.classList.add('week');
@@ -46,10 +46,16 @@ async function createPlannerHTML() {
             });
             container.appendChild(weekDiv);
         });
+        data.forgottenTasks.forEach(task => {
+            const taskElement = createTaskElement(task, document.querySelector('.forgotten-tasks'));
+            document.querySelector('.forgot-tasks').appendChild(taskElement);
+        });
+        data.longTerm.forEach(task => {
+            const taskElement = createTaskElement(task, document.querySelector('.long-term-tasks'));
+            document.querySelector('.long-term-tasks').appendChild(taskElement);
+        });
 
-        // Implementer drag-and-drop funksjonalitet
         implementDragAndDrop();
-
         updateDayBackgrounds();
     } catch (error) {
         console.error("Feil ved henting av data:", error);
@@ -135,7 +141,7 @@ async function drop(e) {
     const newDay = this.getAttribute('data-day');
     
     try {
-        await window.appFunctions.updateTaskDay(taskId, newDay);
+        await app.updateTaskDay(taskId, newDay);
         updateDayBackgrounds();
     } catch (error) {
         console.error("Feil ved oppdatering av oppgavedag:", error);
@@ -164,9 +170,7 @@ function updateDayBackgrounds() {
     });
 }
 
-// Kall funksjonen når siden lastes og når oppgaver endres
 document.addEventListener('DOMContentLoaded', updateDayBackgrounds);
-// Legg til dette kallet etter at du har lagt til eller slettet oppgaver
 
 document.querySelector('.add-long-term-task').addEventListener('click', () => {
     addTask(0, 'glemt', document.querySelector('.long-term-tasks'));
@@ -186,7 +190,7 @@ async function addTask(weekNr, day, tasksDiv) {
     const newTask = prompt('Skriv inn ny oppgave:');
     if (newTask) {
         try {
-            const taskId = await window.appFunctions.addTask(weekNr, day, newTask);
+            const taskId = await app.addTask(weekNr, day, newTask);
             const taskElement = createTaskElement({id: taskId, task: newTask, checked: false, important: false}, tasksDiv);
             tasksDiv.appendChild(taskElement);
             updateDayBackgrounds();
@@ -202,7 +206,7 @@ async function deleteTask(task, taskElement, tasksDiv) {
     taskElement.remove();
 
     try {
-        await window.appFunctions.deleteTask(task.id);
+        await app.deleteTask(task.id);
         updateDayBackgrounds();
     } catch (error) {
         console.error("Feil ved sletting av oppgave:", error);
@@ -225,7 +229,7 @@ async function changeTaskState(task, taskElement, isCheckingTask) {
     const isImportant = importantEl.classList.contains('important');
 
     try {
-        await window.appFunctions.changeTaskState(task.id, isChecked, isImportant);
+        await app.changeTaskState(task.id, isChecked, isImportant);
     } catch (error) {
         console.error("Feil ved endring av oppgavestatus:", error);
         if (isCheckingTask) {

@@ -69,7 +69,7 @@ function processTasksData(allTasks) {
         } else if (task.weekNr === currentWeek || task.weekNr === nextWeek) {
             let weekIndex = task.weekNr === currentWeek ? 0 : 1;
             weeks[weekIndex].weekdays[task.day].push(task);
-        } else {
+        } else if (!task.checked) {
             forgottenTasks.push(task);
         }
     }
@@ -93,26 +93,13 @@ function processTasksData(allTasks) {
     return { weeks, forgottenTasks, longTerm };
 }
 
-// Eksporter funksjonene
-window.appFunctions = {
+const app = {
     getTasks,
     addTask,
     deleteTask,
     changeTaskState,
-    updateTaskDay
+    updateTaskDay,
+    processTasksData
 };
 
-// Test funksjon
-async function testConnection() {
-    try {
-        const tasks = await getTasks();
-        console.log('Tilkobling vellykket. Hentet oppgaver:', tasks);
-    } catch (error) {
-        console.error('Feil ved testing av tilkobling:', error);
-    }
-}
-
-// Kjør testen når siden lastes
-window.onload = function() {
-    testConnection();
-};
+export default app;
