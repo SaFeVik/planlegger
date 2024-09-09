@@ -1,4 +1,4 @@
-import app from './app.js';
+import taskManager from './taskManager.js';
 
 // Resten av koden i script.js
 async function createPlannerHTML() {
@@ -6,7 +6,7 @@ async function createPlannerHTML() {
     container.innerHTML = '';
     
     try {
-        const data = await app.getTasks();
+        const data = await taskManager.getTasks();
         data.weeks.forEach(weekData => {
             const weekDiv = document.createElement('div');
             weekDiv.classList.add('week');
@@ -141,7 +141,7 @@ async function drop(e) {
     const newDay = this.getAttribute('data-day');
     
     try {
-        await app.updateTaskDay(taskId, newDay);
+        await taskManager.updateTaskDay(taskId, newDay);
         updateDayBackgrounds();
     } catch (error) {
         console.error("Feil ved oppdatering av oppgavedag:", error);
@@ -190,7 +190,7 @@ async function addTask(weekNr, day, tasksDiv) {
     const newTask = prompt('Skriv inn ny oppgave:');
     if (newTask) {
         try {
-            const taskId = await app.addTask(weekNr, day, newTask);
+            const taskId = await taskManager.addTask(weekNr, day, newTask);
             const taskElement = createTaskElement({id: taskId, task: newTask, checked: false, important: false}, tasksDiv);
             tasksDiv.appendChild(taskElement);
             updateDayBackgrounds();
@@ -206,7 +206,7 @@ async function deleteTask(task, taskElement, tasksDiv) {
     taskElement.remove();
 
     try {
-        await app.deleteTask(task.id);
+        await taskManager.deleteTask(task.id);
         updateDayBackgrounds();
     } catch (error) {
         console.error("Feil ved sletting av oppgave:", error);
@@ -229,7 +229,7 @@ async function changeTaskState(task, taskElement, isCheckingTask) {
     const isImportant = importantEl.classList.contains('important');
 
     try {
-        await app.changeTaskState(task.id, isChecked, isImportant);
+        await taskManager.changeTaskState(task.id, isChecked, isImportant);
     } catch (error) {
         console.error("Feil ved endring av oppgavestatus:", error);
         if (isCheckingTask) {
