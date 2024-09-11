@@ -1,9 +1,11 @@
 import { db } from './firebase.js';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import { getCurrentUser } from './auth.js';
 
-async function getTasks() {
+async function getTasks(username) {
     const tasksCol = collection(db, 'tasks');
-    const taskSnapshot = await getDocs(tasksCol);
+    const q = query(tasksCol, where("user", "==", username));
+    const taskSnapshot = await getDocs(q);
     const taskList = taskSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -18,7 +20,7 @@ async function addTask(weekNr, day, task) {
         task: task,
         checked: false,
         important: false,
-        user: "maritaeline@outlook.com"
+        user: getCurrentUser()
     };
     const docRef = await addDoc(collection(db, "tasks"), newTask);
     return docRef.id;

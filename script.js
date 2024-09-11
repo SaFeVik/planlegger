@@ -1,12 +1,60 @@
 import taskManager from './taskManager.js';
+import { login, logout, getCurrentUser, isLoggedIn } from './auth.js';
 
-// Resten av koden i script.js
+function showLoginOverlay() {
+    document.querySelector('.login-overlay').classList.remove('hide');
+}
+
+function hideLoginOverlay() {
+    document.querySelector('.login-overlay').classList.add('hide');
+}
+
+function showUsername(username) {
+    const usernameElement = document.createElement('div');
+    usernameElement.classList.add('username-display');
+    usernameElement.textContent = username;
+    document.body.insertBefore(usernameElement, document.body.firstChild);
+}
+
+function showLogoutButton() {
+    const logoutButton = document.createElement('button');
+    logoutButton.textContent = 'Logg ut';
+    logoutButton.classList.add('logout-button');
+    logoutButton.addEventListener('click', logout);
+    document.body.insertBefore(logoutButton, document.body.firstChild);
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const user = await login(username, password);
+        hideLoginOverlay();
+        showUsername(user);
+        showLogoutButton();
+        createPlannerHTML();
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// Modify the createPlannerHTML function
 async function createPlannerHTML() {
     const container = document.querySelector('.planner-container');
     container.innerHTML = '';
     
+    if (!isLoggedIn()) {
+        showLoginOverlay();
+        return;
+    }
+
+    showUsername(getCurrentUser());
+    showLogoutButton();
+
     try {
-        const data = await taskManager.getTasks();
+        const data = await taskManager.getTasks(getCurrentUser());
         data.weeks.forEach(weekData => {
             const weekDiv = document.createElement('div');
             weekDiv.classList.add('week');
@@ -63,6 +111,23 @@ async function createPlannerHTML() {
     }
 }
 
+// Add this function to initialize the app
+function initApp() {
+    if (isLoggedIn()) {
+        hideLoginOverlay();
+        createPlannerHTML();
+    } else {
+        showLoginOverlay();
+    }
+}
+
+// Modify the DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+    updateDayBackgrounds();
+});
+
+// Function for making a task element
 function createTaskElement(task, tasksDiv) {
     const taskElement = document.createElement('div');
     taskElement.classList.add('task');
@@ -92,6 +157,7 @@ function createTaskElement(task, tasksDiv) {
     return taskElement;
 }
 
+// Drag and drop
 function implementDragAndDrop() {
     const tasks = document.querySelectorAll('.task');
     const days = document.querySelectorAll('.day');
@@ -148,6 +214,7 @@ async function drop(e) {
     }
 }
 
+// Function for updating the day backgrounds
 function updateDayBackgrounds() {
     const days = document.querySelectorAll('.day');
 
@@ -170,8 +237,7 @@ function updateDayBackgrounds() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', updateDayBackgrounds);
-
+// Long term and forgotten
 document.querySelector('.add-long-term-task').addEventListener('click', () => {
     addTask(0, 'glemt', document.querySelector('.long-term-tasks'));
 });
@@ -186,6 +252,7 @@ document.querySelector('.long-term-container .arrow-left').addEventListener('cli
     document.querySelector('.add-long-term-task').classList.toggle('hide');
 });
 
+// Make and add task
 async function addTask(weekNr, day, tasksDiv) {
     const newTask = prompt('Skriv inn ny oppgave:');
     if (newTask) {
@@ -201,6 +268,7 @@ async function addTask(weekNr, day, tasksDiv) {
     }
 }
 
+// Delete a task
 async function deleteTask(task, taskElement, tasksDiv) {
     const taskElementCopy = taskElement.cloneNode(true);
     taskElement.remove();
@@ -215,6 +283,7 @@ async function deleteTask(task, taskElement, tasksDiv) {
     }
 }
 
+// Change important or checked
 async function changeTaskState(task, taskElement, isCheckingTask) {
     const taskTextEl = taskElement.querySelector('.task-text');
     const importantEl = taskElement.querySelector('.important-container');
@@ -240,9 +309,3 @@ async function changeTaskState(task, taskElement, isCheckingTask) {
         alert('Kunne ikke endre oppgavestatus. Prøv igjen senere.');
     }
 }
-
-// Initialiser planleggeren når siden lastes
-window.onload = async function() {
-    await createPlannerHTML();
-};
-

@@ -6,12 +6,15 @@
 }
 
 body {
-    margin-top: 32px;
     padding-inline: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 32px;
+}
+
+h1 {
+    margin-top: 32px;
 }
 
 h2 {
@@ -71,7 +74,7 @@ h2 {
     flex-direction: column;
     gap: 8px;
 }
-.task {
+.task, .form-element {
     display: flex;
     justify-content: space-between;
     align-items: stretch;
@@ -84,7 +87,7 @@ h2 {
 .task.dragging {
     opacity: 0.5;
 }
-.important-container {
+.important-container, .login-important-container {
     cursor: pointer;
     width: 20px;
     background-color: rgb(255, 243, 216);
@@ -94,7 +97,7 @@ h2 {
     background-color: rgb(255, 201, 113);
 }
 
-.task-text {
+.task-text, .form-element input {
     padding: 8px 16px;
     flex: 1;
     overflow-wrap: break-word;
@@ -108,7 +111,7 @@ h2 {
     background-color: rgb(229, 255, 236);
 }
 
-.delete-task {
+.delete-task, .login-delete-input {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,6 +168,98 @@ h2 {
     width: 100%;
     max-width: 500px;
     padding: 16px;
+}
+
+/* Login */
+.login-overlay {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+    z-index: 1000;
+}
+.login-overlay.hide {
+    display: none;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    margin-inline: 16px;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+}
+.login-subtext {
+    font-size: 14px;
+    color: rgb(100, 100, 100);
+    margin-top: 8px;
+    text-align: center;
+}
+
+#login-form {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-element input {
+    border: none;
+    outline: none;
+}
+
+#login-form button {
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    background-color: white;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    padding: 8px;
+    transition: box-shadow 0.15s ease;
+    border-radius: 4px;
+    color: black;
+    margin-top: 8px;
+}
+
+#login-form button:hover {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.login-delete-input:hover {
+    background-color: rgba(255, 58, 48, 0.082);
+}
+
+.username-display {
+    position: absolute;
+    top: 16px;
+    right: 100px;
+    font-weight: bold;
+}
+
+.logout-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    cursor: pointer;
+    font-size: 14px;
+    border: none;
+    background-color: white;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    padding: 4px 8px;
+    transition: box-shadow 0.15s ease;
+    border-radius: 4px;
+    color: black;
+}
+
+.logout-button:hover {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
 }
 
 /* -------------------------------- */
