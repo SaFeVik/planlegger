@@ -24,6 +24,19 @@ function showLogoutButton() {
     document.body.insertBefore(logoutButton, document.body.firstChild);
 }
 
+// Add this function near the top of your script.js file
+function setupLoginInputs() {
+    const loginInputs = document.querySelectorAll('.form-element input');
+    const deleteButtons = document.querySelectorAll('.login-delete-input');
+
+    loginInputs.forEach((input, index) => {
+        const deleteButton = deleteButtons[index];
+        deleteButton.addEventListener('click', () => {
+            input.value = '';
+        });
+    });
+}
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
@@ -113,6 +126,7 @@ async function createPlannerHTML() {
 
 // Add this function to initialize the app
 function initApp() {
+    setupLoginInputs();
     if (isLoggedIn()) {
         hideLoginOverlay();
         createPlannerHTML();
