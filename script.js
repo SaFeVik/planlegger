@@ -1,5 +1,6 @@
 import taskManager from './taskManager.js';
 import { login, logout, getCurrentUser, isLoggedIn } from './auth.js';
+moment.locale('nb');
 
 function showLoginOverlay() {
     document.querySelector('.login-overlay').classList.remove('hide');
@@ -82,6 +83,12 @@ async function createPlannerHTML() {
                 dayDiv.setAttribute('data-day', day);
 
                 const dayTitle = document.createElement('h3');
+                const today = moment().format('dddd').toLowerCase();
+                const isFirstWeek = weekData.weekNr === moment().isoWeek();
+                console.log(isFirstWeek, day, today);
+                if (isFirstWeek && day === today) {
+                    dayTitle.style.color = 'rgb(255, 59, 48';
+                }
                 dayTitle.innerHTML = day.charAt(0).toUpperCase() + day.slice(1);
                 dayDiv.appendChild(dayTitle);
 
