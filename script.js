@@ -240,8 +240,13 @@ function updateDayBackgrounds() {
     const days = document.querySelectorAll('.day');
 
     days.forEach(day => {
-        const tasks = day.querySelectorAll('.task');
-        const count = Math.min(tasks.length, 7)
+        const tasks = day.querySelectorAll('.task-text');
+        let count = 0
+        tasks.forEach((task) => {
+            if (!task.classList.contains('checked') && count < 7) {
+                count += 1
+            }
+        })
         
         const colors = [
             {r: 255, g: 255, b: 255},
