@@ -69,29 +69,19 @@ async function migrateAllTasksSetYear2024() {
 
 
 function processTasksData(allTasks) {
-    const current = moment();
-    const currentWeek = current.isoWeek();
-    const currentYear = current.isoWeekYear();
-    const next = current.clone().add(1, 'week');
-    const nextWeek = next.isoWeek();
-    const nextYear = next.isoWeekYear();
-
-    let weeks = [
-        {
-            weekNr: currentWeek,
-            year: currentYear,
-            weekdays: {
-                mandag: [], tirsdag: [], onsdag: [], torsdag: [], fredag: [], lørdag: [], søndag: []
-            }
-        },
-        {
-            weekNr: nextWeek,
-            year: nextYear,
-            weekdays: {
-                mandag: [], tirsdag: [], onsdag: [], torsdag: [], fredag: [], lørdag: [], søndag: []
-            }
-        }
-    ];
+    const base = moment();
+    // Build 4 consecutive weeks starting from current week, with correct iso week years
+    let weeks = Array.from({ length: 4 }, (_, i) => {
+        const m = base.clone().add(i, 'week');
+        return {
+            weekNr: m.isoWeek(),
+            year: m.isoWeekYear(),
+            weekdays: { mandag: [], tirsdag: [], onsdag: [], torsdag: [], fredag: [], lørdag: [], søndag: [] }
+        };
+    });
+    const weekKeyToIndex = new Map(
+        weeks.map((w, idx) => [`${w.year}-${w.weekNr}`, idx])
+    );
 
     let forgottenTasks = [];
     let longTerm = [];
@@ -99,12 +89,13 @@ function processTasksData(allTasks) {
     for (let task of allTasks) {
         if (task.weekNr === 0) {
             longTerm.push(task);
-        } else if (
-            (task.weekNr === currentWeek && (task.year ?? currentYear) === currentYear) ||
-            (task.weekNr === nextWeek && (task.year ?? currentYear) === nextYear)
-        ) {
-            let weekIndex = (task.weekNr === currentWeek && (task.year ?? currentYear) === currentYear) ? 0 : 1;
-            weeks[weekIndex].weekdays[task.day].push(task);
+            continue;
+        }
+        const year = task.year ?? base.isoWeekYear();
+        const key = `${year}-${task.weekNr}`;
+        if (weekKeyToIndex.has(key)) {
+            const idx = weekKeyToIndex.get(key);
+            weeks[idx].weekdays[task.day].push(task);
         } else if (!task.checked) {
             forgottenTasks.push(task);
         }
