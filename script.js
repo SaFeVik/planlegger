@@ -74,7 +74,7 @@ async function createPlannerHTML() {
             weekDiv.classList.add('week');
 
             const weekTitle = document.createElement('h2');
-            weekTitle.innerHTML = `Uke ${weekData.weekNr}`;
+            weekTitle.innerHTML = `Uke ${weekData.weekNr} – ${weekData.year}`;
             weekDiv.appendChild(weekTitle);
 
             Object.entries(weekData.weekdays).forEach(([day, tasks]) => {
@@ -84,12 +84,19 @@ async function createPlannerHTML() {
 
                 const dayTitle = document.createElement('h3');
                 const today = moment().format('dddd').toLowerCase();
-                const isFirstWeek = weekData.weekNr === moment().isoWeek();
+                const isFirstWeek = (weekData.weekNr === moment().isoWeek()) && (weekData.year === moment().isoWeekYear());
                 console.log(isFirstWeek, day, today);
                 if (isFirstWeek && day === today) {
-                    dayTitle.style.color = 'rgb(255, 59, 48';
+                    dayTitle.style.color = 'rgb(255, 59, 48)';
                 }
-                dayTitle.innerHTML = day.charAt(0).toUpperCase() + day.slice(1);
+                const dayToIsoMap = { mandag: 1, tirsdag: 2, onsdag: 3, torsdag: 4, fredag: 5, lørdag: 6, søndag: 7 };
+                const isoDay = dayToIsoMap[day];
+                let dateStr = '';
+                if (isoDay) {
+                    dateStr = moment().isoWeekYear(weekData.year).isoWeek(weekData.weekNr).isoWeekday(isoDay).format('DD.MM');
+                }
+                const capitalizedDay = day.charAt(0).toUpperCase() + day.slice(1);
+                dayTitle.innerHTML = `${capitalizedDay} - ${dateStr}`;
                 dayDiv.appendChild(dayTitle);
 
                 const tasksDiv = document.createElement('div');
@@ -107,7 +114,7 @@ async function createPlannerHTML() {
                 const addTaskButton = document.createElement('button');
                 addTaskButton.classList.add('add-task');
                 addTaskButton.innerHTML = 'Legg til';
-                addTaskButton.addEventListener('click', () => addTask(weekData.weekNr, day, tasksDiv));
+                addTaskButton.addEventListener('click', () => addTask(weekData.weekNr, weekData.year, day, tasksDiv));
                 dayDiv.appendChild(addTaskButton);
 
                 weekDiv.appendChild(dayDiv);
@@ -115,7 +122,7 @@ async function createPlannerHTML() {
             container.appendChild(weekDiv);
         });
         data.forgottenTasks.forEach(task => {
-            const taskElement = createTaskElement(task, document.querySelector('.forgotten-tasks'));
+            const taskElement = createTaskElement(task, document.querySelector('.forgot-tasks'));
             document.querySelector('.forgot-tasks').appendChild(taskElement);
         });
         data.longTerm.forEach(task => {
@@ -146,6 +153,8 @@ function initApp() {
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     updateDayBackgrounds();
+    // TEMP: One-time migration call. Remove after it has run successfully once.
+/*     taskManager.migrateAllTasksSetYear2024().then((r) => console.log('Migrasjon ferdig', r)).catch(console.error); */
 });
 
 // Function for making a task element
@@ -265,7 +274,7 @@ function updateDayBackgrounds() {
 
 // Long term and forgotten
 document.querySelector('.add-long-term-task').addEventListener('click', () => {
-    addTask(0, 'glemt', document.querySelector('.long-term-tasks'));
+    addTask(0, null, 'glemt', document.querySelector('.long-term-tasks'));
 });
 
 document.querySelector('.forgot-container .arrow-left').addEventListener('click', (event) => {
@@ -279,11 +288,11 @@ document.querySelector('.long-term-container .arrow-left').addEventListener('cli
 });
 
 // Make and add task
-async function addTask(weekNr, day, tasksDiv) {
+async function addTask(weekNr, year, day, tasksDiv) {
     const newTask = prompt('Skriv inn ny oppgave:');
     if (newTask) {
         try {
-            const taskId = await taskManager.addTask(weekNr, day, newTask);
+            const taskId = await taskManager.addTask(weekNr, day, newTask, year);
             const taskElement = createTaskElement({id: taskId, task: newTask, checked: false, important: false}, tasksDiv);
             tasksDiv.appendChild(taskElement);
             updateDayBackgrounds();
@@ -335,3 +344,4 @@ async function changeTaskState(task, taskElement, isCheckingTask) {
         alert('Kunne ikke endre oppgavestatus. Prøv igjen senere.');
     }
 }
+

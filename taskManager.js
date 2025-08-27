@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, writeBatch } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 import { getCurrentUser } from './auth.js';
 
 async function getTasks(username) {
@@ -13,9 +13,10 @@ async function getTasks(username) {
     return processTasksData(taskList);
 }
 
-async function addTask(weekNr, day, task) {
+async function addTask(weekNr, day, task, year) {
     const newTask = {
         weekNr: weekNr,
+        year: year ?? moment().isoWeekYear(),
         day: day,
         task: task,
         checked: false,
@@ -43,19 +44,49 @@ async function updateTaskDay(taskId, newDay) {
     });
 }
 
+// TEMP: Migration to set year=2024 for ALL tasks (regardless of existing year)
+async function migrateAllTasksSetYear2024() {
+    const tasksCol = collection(db, 'tasks');
+    const taskSnapshot = await getDocs(tasksCol);
+    let batch = writeBatch(db);
+    let ops = 0;
+    let updated = 0;
+    for (const d of taskSnapshot.docs) {
+        batch.update(doc(db, 'tasks', d.id), { year: 2024 });
+        ops += 1;
+        updated += 1;
+        if (ops >= 400) {
+            await batch.commit();
+            batch = writeBatch(db);
+            ops = 0;
+        }
+    }
+    if (ops > 0) {
+        await batch.commit();
+    }
+    return { updated };
+}
+
+
 function processTasksData(allTasks) {
-    const currentWeek = moment().isoWeek();
-    const nextWeek = currentWeek + 1;
+    const current = moment();
+    const currentWeek = current.isoWeek();
+    const currentYear = current.isoWeekYear();
+    const next = current.clone().add(1, 'week');
+    const nextWeek = next.isoWeek();
+    const nextYear = next.isoWeekYear();
 
     let weeks = [
         {
             weekNr: currentWeek,
+            year: currentYear,
             weekdays: {
                 mandag: [], tirsdag: [], onsdag: [], torsdag: [], fredag: [], lørdag: [], søndag: []
             }
         },
         {
             weekNr: nextWeek,
+            year: nextYear,
             weekdays: {
                 mandag: [], tirsdag: [], onsdag: [], torsdag: [], fredag: [], lørdag: [], søndag: []
             }
@@ -68,8 +99,11 @@ function processTasksData(allTasks) {
     for (let task of allTasks) {
         if (task.weekNr === 0) {
             longTerm.push(task);
-        } else if (task.weekNr === currentWeek || task.weekNr === nextWeek) {
-            let weekIndex = task.weekNr === currentWeek ? 0 : 1;
+        } else if (
+            (task.weekNr === currentWeek && (task.year ?? currentYear) === currentYear) ||
+            (task.weekNr === nextWeek && (task.year ?? currentYear) === nextYear)
+        ) {
+            let weekIndex = (task.weekNr === currentWeek && (task.year ?? currentYear) === currentYear) ? 0 : 1;
             weeks[weekIndex].weekdays[task.day].push(task);
         } else if (!task.checked) {
             forgottenTasks.push(task);
@@ -88,6 +122,9 @@ function processTasksData(allTasks) {
         if (a.task !== b.task) {
             return a.task.localeCompare(b.task);
         }
+        if ((a.year ?? 0) !== (b.year ?? 0)) {
+            return (a.year ?? 0) - (b.year ?? 0);
+        }
         return a.weekNr - b.weekNr;
     });
     longTerm.sort((a, b) => a.task.localeCompare(b.task));
@@ -101,7 +138,8 @@ const app = {
     deleteTask,
     changeTaskState,
     updateTaskDay,
-    processTasksData
+    processTasksData,
+    migrateAllTasksSetYear2024 // TEMP: expose for manual run
 };
 
 export default app;
